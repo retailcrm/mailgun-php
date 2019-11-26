@@ -134,12 +134,15 @@ class Message extends HttpApi
     private function prepareFile(string $fieldName, array $filePath): array
     {
         $filename = isset($filePath['filename']) ? $filePath['filename'] : null;
+        $deleteRequired = false;
 
         if (isset($filePath['fileContent'])) {
             // File from memory
-            $resource = fopen('php://temp', 'r+');
+            $filename = tempnam(sys_get_temp_dir(), "MAILGUN_TMP");
+            $resource = fopen($filename, 'r+');
             fwrite($resource, $filePath['fileContent']);
             rewind($resource);
+            $deleteRequired = true;
         } elseif (isset($filePath['filePath'])) {
             // File form path
             $path = $filePath['filePath'];
@@ -158,6 +161,7 @@ class Message extends HttpApi
             'name' => $fieldName,
             'content' => $resource,
             'filename' => $filename,
+            'deleteRequired' => $deleteRequired,
         ];
     }
 
@@ -188,6 +192,13 @@ class Message extends HttpApi
         foreach ($params as $param) {
             if (is_array($param) && array_key_exists('content', $param) && is_resource($param['content'])) {
                 fclose($param['content']);
+            }
+            if (is_array($param)) {
+                $isFile = array_key_exists('filename', $param) && is_file($param['filename']);
+                $deleteRequired = $param['deleteRequired'] ?? false;
+                if ($isFile && $deleteRequired) {
+                    unlink($param['filename']);
+                }
             }
         }
     }
