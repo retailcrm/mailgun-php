@@ -124,6 +124,52 @@ class MessageTest extends TestCase
         $api->sendMime('foo', ['mailbox@myapp.com'], $message, []);
     }
 
+    public function testCloseResourcesOnSendRequestException()
+    {
+        $api = $this->getApiMock();
+
+        $api->expects($this->once())
+            ->method('httpPostRaw')
+            ->willThrowException(new \Exception('Something went wrong'));
+
+        $streamsCount = count(get_resources('stream'));
+
+        try {
+            $api->send('example.com', [
+                'from' => 'bob@example.com',
+                'to' => 'sally@example.com',
+                'subject' => 'Test file path attachments',
+                'text' => 'Test',
+                'attachment' => [
+                    ['filePath' => __DIR__.'/../TestAssets/mailgun_icon1.png', 'filename' => 'mailgun_icon1.png'],
+                ],
+            ]);
+        } catch (\Exception $e) {
+            $this->assertEquals('Something went wrong', $e->getMessage());
+        }
+
+        $this->assertCount($streamsCount, get_resources('stream'));
+    }
+
+    public function testCloseResourcesOnSendMimeRequestException()
+    {
+        $api = $this->getApiMock();
+
+        $api->expects($this->once())
+            ->method('httpPostRaw')
+            ->willThrowException(new \Exception('Something went wrong'));
+
+        $streamsCount = count(get_resources('stream'));
+
+        try {
+            $api->sendMime('foo', ['mailbox@myapp.com'], 'mime message', ['o:Foo' => 'bar']);
+        } catch (\Exception $e) {
+            $this->assertEquals('Something went wrong', $e->getMessage());
+        }
+
+        $this->assertCount($streamsCount, get_resources('stream'));
+    }
+
     /**
      * {@inheritdoc}
      */
