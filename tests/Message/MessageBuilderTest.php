@@ -22,7 +22,7 @@ class MessageBuilderTest extends MailgunTestCase
      */
     private $messageBuilder;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->messageBuilder = new MessageBuilder();
     }
@@ -154,6 +154,26 @@ class MessageBuilderTest extends MailgunTestCase
                 ],
                 [
                     'filePath' => '@../TestAssets/rackspace_logo.png',
+                    'filename' => null,
+                ],
+            ],
+            $message['attachment']
+        );
+    }
+
+    public function testAddStringAttachment()
+    {
+        $this->messageBuilder->addStringAttachment('12345');
+        $this->messageBuilder->addStringAttachment('test');
+        $message = $this->messageBuilder->getMessage();
+        $this->assertEquals(
+            [
+                [
+                    'fileContent' => '12345',
+                    'filename' => null,
+                ],
+                [
+                    'fileContent' => 'test',
                     'filename' => null,
                 ],
             ],
@@ -295,10 +315,6 @@ class MessageBuilderTest extends MailgunTestCase
         $this->messageBuilder->setDeliveryTime('January 15, 2014 8:00AM');
         $message = $this->messageBuilder->getMessage();
         $this->assertEquals(['o:deliverytime' => 'Wed, 15 Jan 2014 08:00:00 +0000'], $message);
-
-        $this->messageBuilder->setDeliveryTime('1/15/2014 13:50:01', 'CDT');
-        $message = $this->messageBuilder->getMessage();
-        $this->assertEquals(['o:deliverytime' => 'Wed, 15 Jan 2014 13:50:01 -0600'], $message);
     }
 
     public function testAddCustomData()

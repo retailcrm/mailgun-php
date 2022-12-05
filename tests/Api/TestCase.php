@@ -11,9 +11,9 @@ declare(strict_types=1);
 
 namespace Mailgun\Tests\Api;
 
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
 use Mailgun\Hydrator\ModelHydrator;
+use Nyholm\Psr7\Request;
+use Nyholm\Psr7\Response;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -37,7 +37,7 @@ abstract class TestCase extends \PHPUnit\Framework\TestCase
 
     private $hydrateClass;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->reset();
     }
